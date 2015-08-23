@@ -1,0 +1,25 @@
+<title>mana tip</title>
+<link rel="stylesheet" href="style.css">
+<style media="screen">
+  body > div:first-child {
+    width: 50px; height: 100px;
+    margin: 100px auto;
+    background: orange;
+    text-align: center;
+  }
+  body {
+    height: 1000px;
+  }
+</style>
+<div></div>
+<script>
+  const {App,JSX} = require('mana/app')
+  const {Tip} = require('./')
+  new App(null, () => {
+    return <Tip content={<span>This is a tip</span>}
+                position='right'
+                effect='fade'>
+      <div>This is the target node</div>
+    </Tip>
+  }, document.body.firstChild)
+</script>
