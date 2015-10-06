@@ -21,10 +21,10 @@ const autoShow = {
 //
 const bindTip = (tip, target, options) => {
   if (options.show !== true) {
-    target = target.mergeParams(autoShow)
-    tip = tip.mergeParams(autoShow)
+    target = addEvents(target, autoShow)
+    tip = addEvents(tip, autoShow)
   }
-  return target.mergeParams({
+  return addEvents(target, {
     onMount(dom) {
       dom.tip = new Engine(tip, dom, options)
       if (options.show === true) dom.tip.show()
@@ -33,6 +33,12 @@ const bindTip = (tip, target, options) => {
       tip.hide()
     }
   })
+}
+
+const addEvents = (node, events) => {
+  node = Object.create(node)
+  node.events = Object.create(node.events)
+  return node.mergeParams(events)
 }
 
 /////
