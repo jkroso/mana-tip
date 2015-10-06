@@ -3,13 +3,17 @@
 <style media="screen">
   body {
     font: 300 14px "Helvetica Neue", Helvetica, Arial;
+    min-width: 2000px;
     margin: 0;
-    padding: 500px;
   }
-  span {
-    display: block;
+  .tips {
+    margin: 500px 800px;
+  }
+  .tips > span {
+    display: inline-block;
     border: 1px solid #eee;
     padding: 10px;
+    margin: 100px 50px;
     width: 100px;
     height: 100px;
     line-height: 100px;
@@ -23,12 +27,33 @@
 <script>
   const {App,JSX} = require('mana')
   const {Tip} = require('./')
-  const content = <div>
-    <img src="http://seasteading.wpengine.netdna-cdn.com/wp-content/uploads/2015/02/floatingCityTrimmed-1024x677.jpg"/>
-  </div>
-  const app = new App(null, () =>
-    <Tip content position="top" show={true}>
-      <span>Artisanopolis</span>
-    </Tip>)
+  const positions = [
+    'top',
+    'top-left',
+    'top-right',
+    'bottom',
+    'bottom-left',
+    'bottom-right',
+    'left',
+    'left-top',
+    'left-bottom',
+    'right',
+    'right-top',
+    'right-bottom'
+  ].map(pos => {
+    const box = <span>{pos}</span>
+    return <Tip content={box} position={pos} show={true}>{box}</Tip>
+  })
+  const app = new App(null, () => {
+    const content = <div>
+      <img alt="Artisanopolis"
+           src="http://seasteading.wpengine.netdna-cdn.com/wp-content/uploads/2015/02/floatingCityTrimmed-1024x677.jpg"/>
+    </div>
+    return <div class="tips">
+      {positions}
+      <Tip content show={true} auto={false}><span>fixed position</span></Tip>
+      <Tip content><span>auto show</span></Tip>
+    </div>
+  })
   window.onload = () => app.mountIn(document.body)
 </script>

@@ -27,7 +27,7 @@ const bindTip = (tip, target, options) => {
   return target.mergeParams({
     onMount(dom) {
       dom.tip = new Engine(tip, dom, options)
-      if (options.show !== false) dom.tip.show()
+      if (options.show === true) dom.tip.show()
     },
     onUnMount({tip}) {
       tip.hide()
