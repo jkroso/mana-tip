@@ -1,5 +1,9 @@
 const ComponentTip = require('component-tip')
 
+// only one tip should be visible at a time
+// TODO: make it a stack
+var activeTip = null
+
 /**
  * Bind a tool tip to be displayed around a target node when the user
  * hovers their mouse over it. It will automatically choose the best
@@ -13,24 +17,31 @@ const ComponentTip = require('component-tip')
 
 const bindTip = (tip, target, options) =>
   target.mergeParams({
-    onMouseEnter(e, {dom}) {
+    onMouseEnter(e, node, dom) {
       dom.tip.show(dom)
+      if (activeTip != dom.tip) hide(activeTip)
+      activeTip = dom.tip
     },
-    onMouseLeave(e, {dom:{tip}}) {
-      tip.el.contains(e.relatedTarget) || tip.hide()
+    onMouseLeave(e, node, {tip}) {
+      tip.el.contains(e.relatedTarget) || hide(tip)
     },
-    onMount({dom}) {
+    onMount(dom) {
       dom.tip = new ComponentTip(tip.toDOM(), options)
       if (options.position) dom.tip.position(options.position)
       if (options.effect) dom.tip.effect(options.effect)
       dom.tip.el.onmouseleave = e => {
-        dom.contains(e.relatedTarget) || dom.tip.hide()
+        dom.contains(e.relatedTarget) || hide(dom.tip)
       }
     },
-    onUnMount({dom}) {
-      dom.tip.hide()
+    onUnMount(dom) {
+      hide(dom.tip)
     }
   })
+
+const hide = tip => {
+  if (activeTip === tip) activeTip = null
+  tip && tip.hide()
+}
 
 /**
  * Provides an API for use in JSX
