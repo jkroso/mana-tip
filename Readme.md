@@ -9,9 +9,13 @@ A tool tip decorator for Mana
 then in your app:
 
 ```js
-var mana-tip = require('mana-tip')
+const Tip = require('mana-tip')
 ```
 
 ## API
 
-### `mana-tip()`
+```js
+<Tip content={<span>a tip</span>}>
+  <div>The tips owner</div>
+</Tip>
+```
