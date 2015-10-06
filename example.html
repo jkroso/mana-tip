@@ -1,25 +1,34 @@
 <title>mana tip</title>
 <link rel="stylesheet" href="style.css">
 <style media="screen">
-  body > div:first-child {
-    width: 50px; height: 100px;
-    margin: 100px auto;
-    background: orange;
+  body {
+    font: 300 14px "Helvetica Neue", Helvetica, Arial;
+    margin: 0;
+    padding: 500px;
+  }
+  span {
+    display: block;
+    border: 1px solid #eee;
+    padding: 10px;
+    width: 100px;
+    height: 100px;
+    line-height: 100px;
     text-align: center;
   }
-  body {
-    height: 1000px;
+  img {
+    width: 200px;
+    height: 100px;
   }
 </style>
-<div></div>
 <script>
-  const {App,JSX} = require('mana/app')
+  const {App,JSX} = require('mana')
   const {Tip} = require('./')
-  new App(null, () => {
-    return <Tip content={<span>This is a tip</span>}
-                position='right'
-                effect='fade'>
-      <div>This is the target node</div>
-    </Tip>
-  }, document.body.firstChild)
+  const content = <div>
+    <img src="http://seasteading.wpengine.netdna-cdn.com/wp-content/uploads/2015/02/floatingCityTrimmed-1024x677.jpg"/>
+  </div>
+  const app = new App(null, () =>
+    <Tip content position="top" show={true}>
+      <span>Artisanopolis</span>
+    </Tip>)
+  window.onload = () => app.mountIn(document.body)
 </script>

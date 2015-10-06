@@ -4,17 +4,13 @@
   "description": "A tool tip decorator for Mana",
   "keywords": ["tool tip","mana"],
   "dependencies": {
-    "component-tip": "jkroso/tip#improve-auto-positioning",
-    "babelify": "*"
+    "viewport": "2"
   },
   "devDependencies": {
-    "serve": "jkroso/serve",
-    "mana": "jkroso/mana"
+    "mana": "jkroso/mana",
+    "serve": "jkroso/serve"
   },
-  "browserify": {
-    "transform": [["babelify", {"jsxPragma": "JSX","stage":0}]]
-  },
-  "transpile": [["*.js", "!sourcegraph/babel->js", {"jsxPragma": "JSX", "stage": 0}]],
+  "transpile": [["*.js", "!sourcegraph/babel->js", {"stage": 0}]],
   "repository": "git://github.com/jkroso/mana-tip.git",
   "author": "Jake Rosoman",
   "files": ["index.js"],
