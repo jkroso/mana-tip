@@ -19,6 +19,27 @@
     line-height: 100px;
     text-align: center;
   }
+  .tips > span {
+    position: relative;
+  }
+  .tips > span::before,
+  .tips > span::after {
+    content: '';
+    position: absolute;
+    border: 1px dashed rgb(190,190,190);
+    border-top: none;
+    border-left: none;
+  }
+  .tips > span::before {
+    left: calc(50% - 0px);
+    height: 100%;
+    top: 0;
+  }
+  .tips > span::after {
+    top: calc(50% - 0px);
+    width: 100%;
+    left: 0;
+  }
   img {
     width: 200px;
     height: 100px;
@@ -51,8 +72,8 @@
     </div>
     return <div class="tips">
       {positions}
-      <Tip content show={true} auto={false}><span>fixed position</span></Tip>
-      <Tip content><span>auto show</span></Tip>
+      <Tip content show={true}><span>More content</span></Tip>
+      <Tip content auto={false}><span>Auto Show</span></Tip>
     </div>
   })
   window.onload = () => app.mountIn(document.body)

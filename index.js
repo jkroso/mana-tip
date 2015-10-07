@@ -178,41 +178,41 @@ class Engine {
       case 'top-left':
         return {
           top: targetRect.top - eh - pad,
-          left: targetRect.left + tw / 2 - ew
+          left: targetRect.left + tw / 2 - ew + 20
         }
       case 'top-right':
         return {
           top: targetRect.top - eh - pad,
-          left: targetRect.left + tw / 2
+          left: targetRect.left + tw / 2 -18
         }
       case 'bottom-left':
         return {
           top: targetRect.top + th + pad,
-          left: targetRect.left + tw / 2 - ew
+          left: targetRect.left + tw / 2 - ew + 20
         }
       case 'bottom-right':
         return {
           top: targetRect.top + th + pad,
-          left: targetRect.left + tw / 2
+          left: targetRect.left + tw / 2 - 18
         }
       case 'left-top':
         return {
-          top: targetRect.top + th / 2 - eh,
+          top: targetRect.top + th / 2 - eh + 20,
           left: targetRect.left - ew - pad
         }
       case 'left-bottom':
         return {
-          top: targetRect.top + th / 2,
+          top: targetRect.top + th / 2 - 18,
           left: targetRect.left - ew - pad
         }
       case 'right-top':
         return {
-          top: targetRect.top + th / 2 - eh,
+          top: targetRect.top + th / 2 - eh + 20,
           left: targetRect.left + tw + pad
         }
       case 'right-bottom':
         return {
-          top: targetRect.top + th / 2,
+          top: targetRect.top + th / 2 - 18,
           left: targetRect.left + tw + pad
         }
       default:
@@ -268,16 +268,16 @@ const chooseSecondary = (primary, prefered, tip, w, h) => {
     var offBottom = port.height - h - off.top
     var offRight = port.width - w - off.left
     var yVisible = h
-    if (off.top < 0) yVisible -= off.top
-    if (offBottom < 0) yVisible -= offBottom
+    if (off.top < 0) yVisible += off.top
+    if (offBottom < 0) yVisible += offBottom
     var xVisible = w
-    if (off.left < 0) xVisible -= off.left
-    if (offRight < 0) xVisible -= offRight
+    if (off.left < 0) xVisible += off.left
+    if (offRight < 0) xVisible += offRight
     var area = Math.max(xVisible, 0) * Math.max(yVisible, 0)
     // the first position that shows all the tip
     if (area == max) return pos
     // shows more of the tip than the other positions
-    if (area > best) best = area, bestPos = pos
+    if (area > best) {best = area; bestPos = pos}
   }
   return bestPos
 }
