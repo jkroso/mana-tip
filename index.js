@@ -1,38 +1,39 @@
 const viewport = require('viewport')
 
-const autoShow = {
-  onMouseEnter(e, node, {tip}) {
-    tip.show()
-  },
-  onMouseLeave(e, node, {tip}) {
-    tip.hide()
-  }
+const onMouseEnter = (e, {tip_options}, dom) => {
+  dom.tip = new Engine(tip_options.content, dom, tip_options)
+  dom.tip.show()
 }
+
+const onMouseLeave = (e, node, {tip}) => tip.hide()
 
 /////
 // Bind a tool tip to be displayed around a target node when the user
 // hovers their mouse over it. It will automatically choose the best
 // position depending on where room is availabe in the viewport
 //
-// @param  {VirtualElement} tip
 // @param  {VirtualElement} target
 // @param  {Object} options
 // @return {target}
 //
-const bindTip = (tip, target, options) => {
-  if (options.show !== true) {
-    target = addEvents(target, autoShow)
-    tip = addEvents(tip, autoShow)
-  }
-  return addEvents(target, {
-    onMount(dom) {
-      dom.tip = new Engine(tip, dom, options)
-      if (options.show === true) dom.tip.show()
+const bindTip = (target, options) => {
+  target = addEvents(target, {
+    onMount(dom, node) {
+      if (options.show === true) onMouseEnter(null, node, dom)
     },
     onUnMount({tip}) {
-      tip.hide()
+      tip && tip.hide()
     }
   })
+  if (options.show !== true) {
+    options.content = addEvents(options.content, {
+      onMouseEnter(e, node, {tip}) { tip.show() },
+      onMouseLeave
+    })
+    target = target.mergeParams({onMouseEnter, onMouseLeave})
+  }
+  target.tip_options = options
+  return target
 }
 
 const addEvents = (node, events) => {
@@ -44,7 +45,7 @@ const addEvents = (node, events) => {
 /////
 // Provides an API for use in JSX
 //
-const Tip = (options, [target]) => bindTip(options.content, target, options)
+const Tip = (options, [target]) => bindTip(target, options)
 
 /////
 // Posible positions are
@@ -81,11 +82,10 @@ class Engine {
     clearTimeout(this._hide)
     if (this.binding) return this.el.classList.remove('tip-hide')
 
-    this.el = this.el || this.node.toDOM()
+    this.el = this.node.toDOM()
     this.el.tip = this
     this.el.classList.add('tip-hide')
     document.body.appendChild(this.el)
-    this.replaceClass(this.position)
     // defer so animations css animations can work
     requestAnimationFrame(() => {
       this.el.classList.remove('tip-hide')
@@ -139,6 +139,7 @@ class Engine {
     return chooseSecondary(primary, positions[1], this, w, h) || pos
   }
 
+  /////
   // Compute the offset for `.target` based on the given `pos`
   //
   // @param {String} pos
