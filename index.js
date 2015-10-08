@@ -97,9 +97,10 @@ class Engine {
   }
 
   reposition(port) {
-    const pos = this.auto ? this.suggested(this.position) : this.position
+    const [pos, {top,left}] = this.auto
+      ? this.suggested(this.position)
+      : [this.position, this.offset(this.position)]
     this.replaceClass(pos)
-    const {top,left} = this.offset(pos)
     this.el.style.top = port.top + top + 'px'
     this.el.style.left = port.left + left + 'px'
   }
@@ -109,34 +110,6 @@ class Engine {
     if (this.currentPosition) this.el.classList.remove(this.currentPosition)
     this.currentPosition = `tip-${pos}`
     this.el.classList.add(this.currentPosition)
-  }
-
-  /////
-  // Compute the "suggested" position favouring `pos`.
-  //
-  // Returns `pos` if no suggestion can be determined.
-  //
-  // @param {String} pos
-  // @param {Object} offset
-  // @return {String}
-  //
-  suggested(pos) {
-    const target = this.target.getBoundingClientRect()
-    const h = this.el.clientHeight
-    const w = this.el.clientWidth
-    const port = viewport.value
-
-    // see where we have spare room
-    const room = {
-      top: target.top - h - this.pad,
-      bottom: port.height - target.bottom - h - this.pad,
-      left: target.left - w - this.pad,
-      right: port.width - target.right - w - this.pad
-    }
-
-    const positions = pos.split('-')
-    const primary = choosePrimary(positions[0], room)
-    return chooseSecondary(primary, positions[1], this, w, h) || pos
   }
 
   /////
@@ -235,51 +208,64 @@ class Engine {
     viewport.removeListener(this.binding)
     this.binding = null
   }
+
+  /////
+  // Compute the "suggested" position favouring `pos`.
+  //
+  // Returns `pos` if no suggestion can be determined.
+  //
+  // @param {String} pos
+  // @param {Object} offset
+  // @return {String}
+  //
+  suggested(preference) {
+    const h = this.el.clientHeight
+    const w = this.el.clientWidth
+    const port = viewport.value
+    var bestArea = -Infinity
+    var bestPos
+    var bestOffset
+    var maxArea = w * h
+    var positions = genPositions(preference.split('-'))
+    for (var i = 0; i < positions.length; i++) {
+      var pos = positions[i]
+      var off = this.offset(pos)
+      var offBottom = port.height - h - off.top
+      var offRight = port.width - w - off.left
+      var yVisible = h
+      if (off.top < 0) yVisible += off.top
+      if (offBottom < 0) yVisible += offBottom
+      var xVisible = w
+      if (off.left < 0) xVisible += off.left
+      if (offRight < 0) xVisible += offRight
+      var area = Math.max(xVisible, 0) * Math.max(yVisible, 0)
+      // the first position that shows all the tip
+      if (area == maxArea) return [pos, off]
+      // shows more of the tip than the other positions
+      if (area > bestArea) {bestArea = area; bestPos = pos; bestOffset = off}
+    }
+    return [bestPos, bestOffset]
+  }
 }
 
-const choosePrimary = (prefered, room) => {
-  // top, bottom, left, right in order of preference
-  const order = [prefered, opposite[prefered], adjacent[prefered], opposite[adjacent[prefered]]]
-  var best = -Infinity
-  var bestPos
-  for (var i = 0, len = order.length; i < len; i++) {
-    var prefered = order[i]
-    var space = room[prefered]
-    // the first side it fits completely
-    if (space > 0) return prefered
-    // less chopped of than other sides
-    if (space > best) best = space, bestPos = prefered
-  }
-  return bestPos
-}
+const concat = [].concat
 
-const chooseSecondary = (primary, prefered, tip, w, h) => {
-  // top, top-left, top-right in order of preference
-  var order = prefered
-    ? [primary + '-' + prefered, primary, primary + '-' + opposite[prefered]]
-    : [primary, primary + '-' + adjacent[primary], primary + '-' + opposite[adjacent[primary]]]
-  var port = viewport.value
-  var bestPos
-  var best = 0
-  var max = w * h
-  for (var i = 0, len = order.length; i < len; i++) {
-    var pos = order[i]
-    var off = tip.offset(pos)
-    var offBottom = port.height - h - off.top
-    var offRight = port.width - w - off.left
-    var yVisible = h
-    if (off.top < 0) yVisible += off.top
-    if (offBottom < 0) yVisible += offBottom
-    var xVisible = w
-    if (off.left < 0) xVisible += off.left
-    if (offRight < 0) xVisible += offRight
-    var area = Math.max(xVisible, 0) * Math.max(yVisible, 0)
-    // the first position that shows all the tip
-    if (area == max) return pos
-    // shows more of the tip than the other positions
-    if (area > best) {best = area; bestPos = pos}
-  }
-  return bestPos
+// top, bottom, left, right in order of preference
+const genPositions = ([first, second]) =>
+  concat.call(genSecondary(first, second),
+              genSecondary(opposite[first], second),
+              genSecondary(adjacent[first]),
+              genSecondary(opposite[adjacent[first]]))
+
+// top, top-left, top-right in order of preference
+const genSecondary = (first, second) => {
+  return second !== undefined
+    ? [first + '-' + second,
+       first,
+       first + '-' + opposite[second]]
+    : [first,
+       first + '-' + adjacent[first],
+       first + '-' + opposite[adjacent[first]]]
 }
 
 const opposite = {
