@@ -205,6 +205,7 @@ class Engine {
   }
 
   hide() {
+    if (!this.el) return
     this.el.classList.add('tip-hide')
     if (this.delay) {
       this._hide = setTimeout((() => this.remove()), this.delay)
@@ -295,4 +296,4 @@ const adjacent = {
 }
 
 export default Tip
-export {bindTip,Tip,Engine}
+export {bindTip,Tip,Engine,stack}
