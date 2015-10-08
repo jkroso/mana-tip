@@ -97,9 +97,11 @@ class Engine {
   }
 
   reposition(port) {
+    const tipRect = this.el.getBoundingClientRect()
+    const targetRect = this.target.getBoundingClientRect()
     const [pos, {top,left}] = this.auto
-      ? this.suggested(this.position)
-      : [this.position, this.offset(this.position)]
+      ? this.suggested(this.position, tipRect, targetRect)
+      : [this.position, this.offset(this.position, tipRect, targetRect)]
     this.replaceClass(pos)
     this.el.style.top = port.top + top + 'px'
     this.el.style.left = port.left + left + 'px'
@@ -116,77 +118,73 @@ class Engine {
   // Compute the offset for `.target` based on the given `pos`
   //
   // @param {String} pos
+  // @param {Object} tipRect
+  // @param {Object} targetRect
   // @return {Object}
   //
-  offset(pos) {
-    const pad = this.pad
-    const tipRect = this.el.getBoundingClientRect()
-    const ew = tipRect.width
-    const eh = tipRect.height
-    const targetRect = this.target.getBoundingClientRect()
-    const tw = targetRect.width
-    const th = targetRect.height
-
+  offset(pos, tipRect, targetRect) {
+    const {width: ew, height: eh} = tipRect
+    const {width: tw, height: th} = targetRect
     switch (pos) {
       case 'top':
         return {
-          top: targetRect.top - eh - pad,
+          top: targetRect.top - eh - this.pad,
           left: targetRect.left + tw / 2 - ew / 2
         }
       case 'bottom':
         return {
-          top: targetRect.top + th + pad,
+          top: targetRect.top + th + this.pad,
           left: targetRect.left + tw / 2 - ew / 2
         }
       case 'right':
         return {
           top: targetRect.top + th / 2 - eh / 2,
-          left: targetRect.left + tw + pad
+          left: targetRect.left + tw + this.pad
         }
       case 'left':
         return {
           top: targetRect.top + th / 2 - eh / 2,
-          left: targetRect.left - ew - pad
+          left: targetRect.left - ew - this.pad
         }
       case 'top-left':
         return {
-          top: targetRect.top - eh - pad,
+          top: targetRect.top - eh - this.pad,
           left: targetRect.left + tw / 2 - ew + 20
         }
       case 'top-right':
         return {
-          top: targetRect.top - eh - pad,
+          top: targetRect.top - eh - this.pad,
           left: targetRect.left + tw / 2 -18
         }
       case 'bottom-left':
         return {
-          top: targetRect.top + th + pad,
+          top: targetRect.top + th + this.pad,
           left: targetRect.left + tw / 2 - ew + 20
         }
       case 'bottom-right':
         return {
-          top: targetRect.top + th + pad,
+          top: targetRect.top + th + this.pad,
           left: targetRect.left + tw / 2 - 18
         }
       case 'left-top':
         return {
           top: targetRect.top + th / 2 - eh + 20,
-          left: targetRect.left - ew - pad
+          left: targetRect.left - ew - this.pad
         }
       case 'left-bottom':
         return {
           top: targetRect.top + th / 2 - 18,
-          left: targetRect.left - ew - pad
+          left: targetRect.left - ew - this.pad
         }
       case 'right-top':
         return {
           top: targetRect.top + th / 2 - eh + 20,
-          left: targetRect.left + tw + pad
+          left: targetRect.left + tw + this.pad
         }
       case 'right-bottom':
         return {
           top: targetRect.top + th / 2 - 18,
-          left: targetRect.left + tw + pad
+          left: targetRect.left + tw + this.pad
         }
       default:
         throw new Error('invalid position "' + pos + '"')
@@ -215,10 +213,11 @@ class Engine {
   // Returns `pos` if no suggestion can be determined.
   //
   // @param {String} pos
-  // @param {Object} offset
-  // @return {String}
+  // @param {Object} tipRect
+  // @param {Object} targetRect
+  // @return {Array[String,Object]}
   //
-  suggested(preference) {
+  suggested(preference, tipRect, targetRect) {
     const h = this.el.clientHeight
     const w = this.el.clientWidth
     const port = viewport.value
@@ -229,7 +228,7 @@ class Engine {
     var positions = genPositions(preference.split('-'))
     for (var i = 0; i < positions.length; i++) {
       var pos = positions[i]
-      var off = this.offset(pos)
+      var off = this.offset(pos, tipRect, targetRect)
       var offBottom = port.height - h - off.top
       var offRight = port.width - w - off.left
       var yVisible = h
