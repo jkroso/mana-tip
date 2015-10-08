@@ -6,10 +6,13 @@
     min-width: 2000px;
     margin: 0;
   }
+  .tip {
+    white-space: pre;
+  }
   .tips {
     margin: 500px 800px;
   }
-  .tips > span {
+  .tips span {
     display: inline-block;
     border: 1px solid #eee;
     padding: 10px;
@@ -19,23 +22,23 @@
     line-height: 100px;
     text-align: center;
   }
-  .tips > span {
+  .tips span {
     position: relative;
   }
-  .tips > span::before,
-  .tips > span::after {
+  .tips span::before,
+  .tips span::after {
     content: '';
     position: absolute;
     border: 1px dashed rgb(190,190,190);
     border-top: none;
     border-left: none;
   }
-  .tips > span::before {
+  .tips span::before {
     left: calc(50% - 0px);
     height: 100%;
     top: 0;
   }
-  .tips > span::after {
+  .tips span::after {
     top: calc(50% - 0px);
     width: 100%;
     left: 0;
@@ -43,6 +46,9 @@
   img {
     width: 200px;
     height: 100px;
+  }
+  .nested {
+    border: 1px solid #eee;
   }
 </style>
 <script>
@@ -74,6 +80,11 @@
       {positions}
       <Tip content show={true}><span>More content</span></Tip>
       <Tip content auto={false}><span>Auto Show</span></Tip>
+      <Tip content={<span>Solo tips take turns</span>} solo={true} show={true}>
+        <div class="nested">
+          <Tip content={<span>And remember who they took over from</span>} solo={true}><span>nested</span></Tip>
+        </div>
+      </Tip>
     </div>
   })
   window.onload = () => app.mountIn(document.body)

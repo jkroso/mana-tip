@@ -1,11 +1,24 @@
 const viewport = require('viewport')
 
+const stack = []
+
 const onMouseEnter = (e, {tip_options}, dom) => {
-  dom.tip = new Engine(tip_options.content, dom, tip_options)
+  dom.tip = dom.tip || new Engine(tip_options.content, dom, tip_options)
+  if (tip_options.solo) {
+    stack.forEach(tip => tip.hide())
+    stack.push(dom.tip)
+  }
   dom.tip.show()
 }
 
-const onMouseLeave = (e, node, {tip}) => tip.hide()
+const onMouseLeave = (e, {tip_options}, dom) => {
+  dom.tip.hide()
+  if (tip_options.solo) {
+    stack.pop()
+    const end = stack.length - 1
+    end >= 0 && stack[end].show()
+  }
+}
 
 /////
 // Bind a tool tip to be displayed around a target node when the user
@@ -21,17 +34,15 @@ const bindTip = (target, options) => {
     onMount(dom, node) {
       if (options.show === true) onMouseEnter(null, node, dom)
     },
-    onUnMount({tip}) {
-      tip && tip.hide()
+    onUnMount(dom, node) {
+      dom.tip && onMouseLeave(null, node, dom)
     }
   })
   if (options.show !== true) {
-    options.content = addEvents(options.content, {
-      onMouseEnter(e, node, {tip}) { tip.show() },
-      onMouseLeave
-    })
+    options.content = addEvents(options.content, {onMouseEnter, onMouseLeave})
     target = target.mergeParams({onMouseEnter, onMouseLeave})
   }
+  options.content.tip_options = options
   target.tip_options = options
   return target
 }
