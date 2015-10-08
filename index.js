@@ -3,7 +3,6 @@ const viewport = require('viewport')
 const stack = []
 
 const onMouseEnter = (e, {tip_options}, dom) => {
-  dom.tip = dom.tip || new Engine(tip_options.content, dom, tip_options)
   if (tip_options.solo) {
     stack.forEach(tip => tip.hide())
     stack.push(dom.tip)
@@ -32,6 +31,7 @@ const onMouseLeave = (e, {tip_options}, dom) => {
 const bindTip = (target, options) => {
   target = addEvents(target, {
     onMount(dom, node) {
+      dom.tip = new Engine(options.content, dom, options)
       if (options.show === true) onMouseEnter(null, node, dom)
     },
     onUnMount(dom, node) {
