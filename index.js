@@ -19,6 +19,16 @@ const onMouseLeave = (e, {tip_options}, dom) => {
   }
 }
 
+const onMount = (dom, node) => {
+  const {tip_options: options} = node
+  dom.tip = new Engine(options.content, dom, options)
+  if (options.show === true) onMouseEnter(null, node, dom)
+}
+
+const onUnMount = (dom, node) => {
+  dom.tip && onMouseLeave(null, node, dom)
+}
+
 /////
 // Bind a tool tip to be displayed around a target node when the user
 // hovers their mouse over it. It will automatically choose the best
@@ -29,15 +39,7 @@ const onMouseLeave = (e, {tip_options}, dom) => {
 // @return {target}
 //
 const bindTip = (target, options) => {
-  target = addEvents(target, {
-    onMount(dom, node) {
-      dom.tip = new Engine(options.content, dom, options)
-      if (options.show === true) onMouseEnter(null, node, dom)
-    },
-    onUnMount(dom, node) {
-      dom.tip && onMouseLeave(null, node, dom)
-    }
-  })
+  target = addEvents(target, {onMount, onUnMount})
   if (options.show !== true) {
     options.content = addEvents(options.content, {onMouseEnter, onMouseLeave})
     target = target.mergeParams({onMouseEnter, onMouseLeave})
