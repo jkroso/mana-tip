@@ -40,7 +40,7 @@ const onUnMount = (dom, node) => {
 //
 const bindTip = (target, options) => {
   target = addEvents(target, {onMount, onUnMount})
-  if (options.show !== true) {
+  if (typeof options.show != 'boolean') {
     options.content = addEvents(options.content, {onMouseEnter, onMouseLeave})
     target = target.mergeParams({onMouseEnter, onMouseLeave})
   }
