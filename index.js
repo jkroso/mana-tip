@@ -1,4 +1,4 @@
-const viewport = require('viewport')
+import viewport from 'viewport'
 
 const stack = []
 
