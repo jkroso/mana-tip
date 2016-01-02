@@ -9,7 +9,7 @@ A tool tip decorator for Mana
 then in your app:
 
 ```js
-const Tip = require('mana-tip')
+import Tip from 'mana-tip'
 ```
 
 ## API
