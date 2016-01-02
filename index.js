@@ -260,7 +260,6 @@ class Engine {
     viewport.removeListener(this.binding)
     this.currentPosition = null
     this.binding = null
-    this.el = null
   }
 
   /////
