@@ -1,32 +1,75 @@
+import {style} from 'easy-style'
 import viewport from 'viewport'
+import {Thunk} from 'mana'
 
-const stack = []
-
-const onMouseEnter = (e, {tip_options}, dom) => {
-  if (tip_options.solo) {
-    stack.forEach(tip => tip.hide())
-    stack.push(dom.tip)
+const className = style({
+  position: 'absolute',
+  zIndex: 1000,
+  top: 0,
+  left: 0,
+  padding: 10,
+  border: '1px solid rgb(190,190,190)',
+  borderRadius: 2,
+  background: 'white',
+  textAlign: 'center',
+  '&.fade': {transition: 'opacity 300ms 100ms'},
+  '&.fade.hide': {opacity: 0},
+  '&::after': {
+    borderRadius: '20% 0 0 0',
+    content: "''",
+    position: 'absolute',
+    width: 15,
+    height: 15,
+    background: 'inherit',
+    border: 'inherit',
+    zIndex: -1,
+    borderBottom: 'none',
+    borderRight: 'none'
+  },
+  '&.top::after, &.top-left::after, &.top-right::after': {
+    transform: 'rotate(-135deg) translate(30%, 30%)',
+    top: '100%',
+  },
+  '&.bottom::after, &.bottom-left::after, &.bottom-right::after': {
+    transform: 'rotate(45deg) translate(30%, 30%)',
+    bottom: '100%'
+  },
+  '&.top::after, &.bottom::after': {
+    left: 'calc(50% - 7.5px)'
+  },
+  '&.top-left::after, &.bottom-left::after': {right: 10},
+  '&.top-right::after, &.bottom-right::after': {left: 10},
+  '&.left::after, &.left-top::after, &.left-bottom::after': {
+    transform: 'rotate(135deg) translate(30%, 30%)',
+    left: '100%'
+  },
+  '&.left-top::after, &.right-top::after': { bottom: 10 },
+  '&.left-bottom::after, &.right-bottom::after': { top: 10 },
+  '&.right::after, &.left::after': {top: 'calc(50% - 7.5px)'},
+  '&.right::after, &.right-top::after, &.right-bottom::after': {
+    transform: 'rotate(315deg) translate(30%, 30%)',
+    right: '100%'
   }
-  dom.tip.show()
-}
+})
 
-const onMouseLeave = (e, {tip_options}, dom) => {
-  dom.tip.hide()
-  if (tip_options.solo) {
-    stack.pop()
-    const end = stack.length - 1
-    end >= 0 && stack[end].show()
+export const stack = []
+
+const events = {
+  onMouseEnter(e, {tip_options}, dom) {
+    if (tip_options.solo) {
+      stack.forEach(tip => tip.hide())
+      stack.push(dom.tip)
+    }
+    dom.tip.show()
+  },
+  onMouseLeave(e, {tip_options}, dom) {
+    dom.tip.hide()
+    if (tip_options.solo) {
+      stack.pop()
+      const end = stack.length - 1
+      end >= 0 && stack[end].show()
+    }
   }
-}
-
-const onMount = (dom, node) => {
-  const {tip_options: options} = node
-  dom.tip = new Engine(options.content, dom, options)
-  if (options.show === true) onMouseEnter(null, node, dom)
-}
-
-const onUnMount = (dom, node) => {
-  dom.tip && onMouseLeave(null, node, dom)
 }
 
 /////
@@ -34,31 +77,32 @@ const onUnMount = (dom, node) => {
 // hovers their mouse over it. It will automatically choose the best
 // position depending on where room is availabe in the viewport
 //
-// @param  {VirtualElement} target
 // @param  {Object} options
+// @param  {Array{VirtualElement}} target
 // @return {target}
 //
-const bindTip = (target, options) => {
-  target = addEvents(target, {onMount, onUnMount})
-  if (typeof options.show != 'boolean') {
-    options.content = addEvents(options.content, {onMouseEnter, onMouseLeave})
-    target = target.mergeParams({onMouseEnter, onMouseLeave})
+export default class Tip extends Thunk {
+  render(options, [target]) {
+    options.content = options.content.assoc({className})
+    if (typeof options.show != 'boolean') {
+      options.content.mergeParams(events)
+      target = target.assoc(events)
+    }
+    options.content.tip_options = options
+    target.tip_options = options
+    return target
   }
-  options.content.tip_options = options
-  target.tip_options = options
-  return target
-}
 
-const addEvents = (node, events) => {
-  node = Object.create(node)
-  node.events = Object.create(node.events)
-  return node.mergeParams(events)
-}
+  onMount(dom) {
+    const options = this.arguments[0]
+    dom.tip = new Engine(options.content, dom, options)
+    if (options.show === true) events.onMouseEnter(null, this.node, dom)
+  }
 
-/////
-// Provides an API for use in JSX
-//
-const Tip = (options, [target]) => bindTip(target, options)
+  onUnMount(dom) {
+    dom.tip && events.onMouseLeave(null, this.node, dom)
+  }
+}
 
 /////
 // Posible positions are
@@ -83,8 +127,8 @@ class Engine {
                              delay=300,
                              auto=true}) {
     this.target = target
-    this.node = node.mergeParams({class: 'tip'})
-    if (effect) node.mergeParams({class: effect})
+    this.node = node
+    if (effect) this.node.mergeParams({class: `${effect} hide`})
     this.position = position.replace(/\s+/g, '-')
     this.pad = padding
     this.auto = auto
@@ -93,17 +137,15 @@ class Engine {
 
   show() {
     clearTimeout(this._hide)
-    if (this.binding) return this.el.classList.remove('tip-hide')
+    if (this.binding) return this.el.classList.remove('hide')
 
-    this.el = this.node.toDOM()
+    this.el = this.node.mountIn(document.body)
     this.el.tip = this
-    this.el.classList.add('tip-hide')
-    document.body.appendChild(this.el)
     // defer so animations css animations can work
     requestAnimationFrame(() => {
-      this.el.classList.remove('tip-hide')
+      this.reposition(viewport.value)
+      this.el.classList.remove('hide')
     })
-    this.reposition(viewport.value)
     this.binding = viewport.addListener(port => {
       if (this.el) this.reposition(port)
     })
@@ -123,8 +165,7 @@ class Engine {
   replaceClass(pos) {
     if (this.currentPosition == pos) return
     if (this.currentPosition) this.el.classList.remove(this.currentPosition)
-    this.currentPosition = `tip-${pos}`
-    this.el.classList.add(this.currentPosition)
+    this.el.classList.add(this.currentPosition = pos)
   }
 
   /////
@@ -200,13 +241,13 @@ class Engine {
           left: targetRect.left + tw + this.pad
         }
       default:
-        throw new Error('invalid position "' + pos + '"')
+        throw new Error(`invalid position "${pos}"`)
     }
   }
 
   hide() {
     if (!this.el) return
-    this.el.classList.add('tip-hide')
+    this.el.classList.add('hide')
     if (this.delay) {
       this._hide = setTimeout((() => this.remove()), this.delay)
     } else {
@@ -215,10 +256,11 @@ class Engine {
   }
 
   remove() {
-    let parent = this.el.parentNode
-    if (parent) parent.removeChild(this.el)
+    if (this.el.parentNode) this.node.remove(this.el)
     viewport.removeListener(this.binding)
+    this.currentPosition = null
     this.binding = null
+    this.el = null
   }
 
   /////
@@ -294,6 +336,3 @@ const adjacent = {
   bottom: 'left',
   right: 'bottom'
 }
-
-export default Tip
-export {bindTip,Tip,Engine,stack}

@@ -4,10 +4,11 @@
   "description": "A tool tip decorator for Mana",
   "keywords": ["tool tip","mana"],
   "dependencies": {
+    "mana": "jkroso/mana",
+    "easy-style": "1",
     "viewport": "2"
   },
   "devDependencies": {
-    "mana": "jkroso/mana",
     "serve": "jkroso/serve"
   },
   "transpile": [["*.js", "!sourcegraph/babel->js", {"stage": 0}]],
