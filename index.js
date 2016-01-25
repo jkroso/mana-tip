@@ -1,54 +1,53 @@
 import {style} from 'easy-style'
 import viewport from 'viewport'
-import {Thunk} from 'mana'
+import {Thunk,JSX} from 'mana'
 
 const className = style({
   position: 'absolute',
   zIndex: 1000,
+  padding: 10,
   top: 0,
   left: 0,
-  padding: 10,
-  border: '1px solid rgb(190,190,190)',
-  borderRadius: 2,
-  background: 'white',
-  textAlign: 'center',
-  '&.fade': {transition: 'opacity 300ms 100ms'},
-  '&.fade.hide': {opacity: 0},
-  '&::after': {
+  '&.fade': { transition: 'opacity 300ms 100ms' },
+  '&.fade.hide': { opacity: 0 },
+  '> .content': {
+    textAlign: 'center',
+    borderRadius: 2,
+    padding: 10,
+  },
+  '& > .content, & > .arrow': {
+    border: '1px solid rgb(190,190,190)',
+    background: 'white',
+  },
+  '> .arrow': {
     borderRadius: '20% 0 0 0',
-    content: "''",
     position: 'absolute',
     width: 15,
     height: 15,
-    background: 'inherit',
-    border: 'inherit',
-    zIndex: -1,
     borderBottom: 'none',
     borderRight: 'none'
   },
-  '&.top::after, &.top-left::after, &.top-right::after': {
+  '&.top > .arrow, &.top-left > .arrow, &.top-right > .arrow': {
     transform: 'rotate(-135deg) translate(30%, 30%)',
-    top: '100%',
+    bottom: -4,
   },
-  '&.bottom::after, &.bottom-left::after, &.bottom-right::after': {
+  '&.bottom > .arrow, &.bottom-left > .arrow, &.bottom-right > .arrow': {
     transform: 'rotate(45deg) translate(30%, 30%)',
-    bottom: '100%'
+    top: -4
   },
-  '&.top::after, &.bottom::after': {
-    left: 'calc(50% - 7.5px)'
-  },
-  '&.top-left::after, &.bottom-left::after': {right: 10},
-  '&.top-right::after, &.bottom-right::after': {left: 10},
-  '&.left::after, &.left-top::after, &.left-bottom::after': {
+  '&.top > .arrow, &.bottom > .arrow': { left: 'calc(50% - 7.5px)'},
+  '&.top-left > .arrow, &.bottom-left > .arrow': {right: 20},
+  '&.top-right > .arrow, &.bottom-right > .arrow': {left: 20},
+  '&.left > .arrow, &.left-top > .arrow, &.left-bottom > .arrow': {
     transform: 'rotate(135deg) translate(30%, 30%)',
-    left: '100%'
+    right: -4
   },
-  '&.left-top::after, &.right-top::after': { bottom: 10 },
-  '&.left-bottom::after, &.right-bottom::after': { top: 10 },
-  '&.right::after, &.left::after': {top: 'calc(50% - 7.5px)'},
-  '&.right::after, &.right-top::after, &.right-bottom::after': {
+  '&.left-top > .arrow, &.right-top > .arrow': { bottom: 20 },
+  '&.left-bottom > .arrow, &.right-bottom > .arrow': { top: 20 },
+  '&.right > .arrow, &.left > .arrow': {top: 'calc(50% - 7.5px)'},
+  '&.right > .arrow, &.right-top > .arrow, &.right-bottom > .arrow': {
     transform: 'rotate(315deg) translate(30%, 30%)',
-    right: '100%'
+    left: -4
   }
 })
 
@@ -83,7 +82,10 @@ const events = {
 //
 export default class Tip extends Thunk {
   render(options, [target]) {
-    options.content = options.content.assoc({className})
+    options.content = <div className>
+      <div class="arrow"></div>
+      <div class="content">{options.content}</div>
+    </div>
     if (typeof options.show != 'boolean') {
       options.content.mergeParams(events)
       target = target.assoc(events)
@@ -123,14 +125,12 @@ export default class Tip extends Thunk {
 class Engine {
   constructor(node, target, {position='top',
                              effect='fade',
-                             padding=10,
                              delay=300,
                              auto=true}) {
     this.target = target
     this.node = node
     if (effect) this.node.mergeParams({class: `${effect} hide`})
     this.position = position.replace(/\s+/g, '-')
-    this.pad = padding
     this.auto = auto
     this.delay = effect == null ? 0 : delay
   }
@@ -182,63 +182,63 @@ class Engine {
     switch (pos) {
       case 'top':
         return {
-          top: targetRect.top - eh - this.pad,
+          top: targetRect.top - eh,
           left: targetRect.left + tw / 2 - ew / 2
         }
       case 'bottom':
         return {
-          top: targetRect.top + th + this.pad,
+          top: targetRect.top + th,
           left: targetRect.left + tw / 2 - ew / 2
         }
       case 'right':
         return {
           top: targetRect.top + th / 2 - eh / 2,
-          left: targetRect.left + tw + this.pad
+          left: targetRect.left + tw
         }
       case 'left':
         return {
           top: targetRect.top + th / 2 - eh / 2,
-          left: targetRect.left - ew - this.pad
+          left: targetRect.left - ew
         }
       case 'top-left':
         return {
-          top: targetRect.top - eh - this.pad,
-          left: targetRect.left + tw / 2 - ew + 20
+          top: targetRect.top - eh,
+          left: targetRect.left + tw / 2 - ew + 28
         }
       case 'top-right':
         return {
-          top: targetRect.top - eh - this.pad,
-          left: targetRect.left + tw / 2 -18
+          top: targetRect.top - eh,
+          left: targetRect.left + tw / 2 - 28
         }
       case 'bottom-left':
         return {
-          top: targetRect.top + th + this.pad,
-          left: targetRect.left + tw / 2 - ew + 20
+          top: targetRect.top + th,
+          left: targetRect.left + tw / 2 - ew + 28
         }
       case 'bottom-right':
         return {
-          top: targetRect.top + th + this.pad,
-          left: targetRect.left + tw / 2 - 18
+          top: targetRect.top + th,
+          left: targetRect.left + tw / 2 - 28
         }
       case 'left-top':
         return {
-          top: targetRect.top + th / 2 - eh + 20,
-          left: targetRect.left - ew - this.pad
+          top: targetRect.top + th / 2 - eh + 28,
+          left: targetRect.left - ew
         }
       case 'left-bottom':
         return {
-          top: targetRect.top + th / 2 - 18,
-          left: targetRect.left - ew - this.pad
+          top: targetRect.top + th / 2 - 28,
+          left: targetRect.left - ew
         }
       case 'right-top':
         return {
-          top: targetRect.top + th / 2 - eh + 20,
-          left: targetRect.left + tw + this.pad
+          top: targetRect.top + th / 2 - eh + 28,
+          left: targetRect.left + tw
         }
       case 'right-bottom':
         return {
-          top: targetRect.top + th / 2 - 18,
-          left: targetRect.left + tw + this.pad
+          top: targetRect.top + th / 2 - 28,
+          left: targetRect.left + tw
         }
       default:
         throw new Error(`invalid position "${pos}"`)
