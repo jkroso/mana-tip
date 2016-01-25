@@ -28,26 +28,26 @@ const className = style({
     borderRight: 'none'
   },
   '&.top > .arrow, &.top-left > .arrow, &.top-right > .arrow': {
-    transform: 'rotate(-135deg) translate(30%, 30%)',
-    bottom: -4,
+    transform: 'rotate(-135deg) translate(11%, 11%)',
+    bottom: 0,
   },
   '&.bottom > .arrow, &.bottom-left > .arrow, &.bottom-right > .arrow': {
-    transform: 'rotate(45deg) translate(30%, 30%)',
-    top: -4
+    transform: 'rotate(45deg) translate(11%, 11%)',
+    top: 0
   },
   '&.top > .arrow, &.bottom > .arrow': { left: 'calc(50% - 7.5px)'},
   '&.top-left > .arrow, &.bottom-left > .arrow': {right: 20},
   '&.top-right > .arrow, &.bottom-right > .arrow': {left: 20},
   '&.left > .arrow, &.left-top > .arrow, &.left-bottom > .arrow': {
-    transform: 'rotate(135deg) translate(30%, 30%)',
-    right: -4
+    transform: 'rotate(135deg) translate(11%, 11%)',
+    right: 0
   },
   '&.left-top > .arrow, &.right-top > .arrow': { bottom: 20 },
   '&.left-bottom > .arrow, &.right-bottom > .arrow': { top: 20 },
   '&.right > .arrow, &.left > .arrow': {top: 'calc(50% - 7.5px)'},
   '&.right > .arrow, &.right-top > .arrow, &.right-bottom > .arrow': {
-    transform: 'rotate(315deg) translate(30%, 30%)',
-    left: -4
+    transform: 'rotate(315deg) translate(11%, 11%)',
+    left: 0
   }
 })
 
@@ -55,6 +55,7 @@ export const stack = []
 
 const events = {
   onMouseEnter(e, {tip_options}, dom) {
+    if (dom.tip.el && (dom.tip.el.contains(e.relatedTarget) || dom.tip.target.contains(e.relatedTarget))) return
     if (tip_options.solo) {
       stack.forEach(tip => tip.hide())
       stack.push(dom.tip)
@@ -62,6 +63,7 @@ const events = {
     dom.tip.show()
   },
   onMouseLeave(e, {tip_options}, dom) {
+    if (dom.tip.el && (dom.tip.el.contains(e.relatedTarget) || dom.tip.target.contains(e.relatedTarget))) return
     dom.tip.hide()
     if (tip_options.solo) {
       stack.pop()
