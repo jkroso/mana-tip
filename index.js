@@ -51,26 +51,9 @@ const className = style({
   }
 })
 
-export const stack = []
-
 const events = {
-  onMouseEnter(e, {tip_options}, dom) {
-    if (dom.tip.el && (dom.tip.el.contains(e.relatedTarget) || dom.tip.target.contains(e.relatedTarget))) return
-    if (tip_options.solo) {
-      stack.forEach(tip => tip.hide())
-      stack.push(dom.tip)
-    }
-    dom.tip.show()
-  },
-  onMouseLeave(e, {tip_options}, dom) {
-    if (dom.tip.el && (dom.tip.el.contains(e.relatedTarget) || dom.tip.target.contains(e.relatedTarget))) return
-    dom.tip.hide()
-    if (tip_options.solo) {
-      stack.pop()
-      const end = stack.length - 1
-      end >= 0 && stack[end].show()
-    }
-  }
+  onMouseEnter(e, node, dom) { dom.tip.show() },
+  onMouseLeave(e, node, dom) { dom.tip.hide() }
 }
 
 /////
@@ -92,8 +75,6 @@ export default class Tip extends Thunk {
       options.content.mergeParams(events)
       target = target.assoc(events)
     }
-    options.content.tip_options = options
-    target.tip_options = options
     return target
   }
 

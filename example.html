@@ -75,13 +75,6 @@
       {positions}
       <Tip content><span>More content</span></Tip>
       <Tip content auto={false}><span>No Autopositioning</span></Tip>
-      <Tip content={<span>Solo tips take turns</span>} solo={true} show={true}>
-        <div class="nested">
-          <Tip content={<span>And remember who they took over from</span>} solo={true}>
-            <span>nested</span>
-          </Tip>
-        </div>
-      </Tip>
     </div>)
 
   window.onload = () => app.mountIn(document.body)
