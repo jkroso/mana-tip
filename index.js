@@ -78,14 +78,20 @@ export default class Tip extends Thunk {
     return target
   }
 
+  update(next, dom) {
+    dom = super.update(next, dom)
+    if (next.arguments[0].show === true) dom.tip.show()
+    return dom
+  }
+
   onMount(dom) {
     const options = this.arguments[0]
     dom.tip = new Engine(options.content, dom, options)
-    if (options.show === true) events.onMouseEnter(null, this.node, dom)
+    if (options.show === true) dom.tip.show()
   }
 
   onUnMount(dom) {
-    dom.tip && events.onMouseLeave(null, this.node, dom)
+    dom.tip && dom.tip.hide()
   }
 }
 
