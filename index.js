@@ -80,6 +80,7 @@ export default class Tip extends Thunk {
 
   update(next, dom) {
     dom = super.update(next, dom)
+    if (!(next instanceof Tip)) return dom
     if (next.arguments[0].show === true) dom.tip.show()
     return dom
   }
